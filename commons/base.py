@@ -64,6 +64,7 @@ class Portfolio():
         self.daily_budge = daily_budge
         self.cash = max_pos * daily_budge
         self.net_worth = self.cash
+        self.net_worth_his = []
         
         self.position = []
         self.trades = []
@@ -76,13 +77,13 @@ class Regression():
         pass
 
     def reg_test(self, strategy, data, every_n=1):
-        boll_data = data.boll_data
-        his_price = data.his_price
+        boll_data = data.load_boll_data()
+        his_price = data.load_his_price()
         start_time = his_price.index[0]
 
         n = 0
         for current_time, price_row in his_price.iterrows():
-            boll_row = boll_data[boll_data['date'] == current_time.strftime('%Y-%m-%d')]
+            boll_row = boll_data[boll_data['date'] < current_time.strftime('%Y-%m-%d')].tail(1)
             strategy._eval(current_time, boll_row, price_row)
 
             n += 1
@@ -93,12 +94,13 @@ class Regression():
         strategy._eval_last(current_time, boll_row, price_row)
 
 class AkShareData():
-    def __init__(self, n, k):
-        self.boll_data = self.load_boll_data(n, k)
-        self.his_price = self.load_his_price()
+    def __init__(self, boll_args, his_args):
+        self.boll_args = boll_args
+        self.his_args = his_args
 
-    def load_boll_data(self, n, k):
-        boll_raw = ak.fund_etf_hist_em(symbol="518880", period="daily", start_date="20130729", end_date="20250428", adjust="")
+    def load_boll_data(self):
+        symbol, start_date, end_date, period, n, k = self.boll_args
+        boll_raw = ak.fund_etf_hist_em(symbol=symbol, period=period, start_date=start_date, end_date=end_date, adjust="")
         
         boll_raw['std'] = boll_raw['收盘'].rolling(window=n).std(ddof=1).round(3)
         boll_raw['MID'] = boll_raw['收盘'].rolling(window=n).mean().round(3)
@@ -111,15 +113,15 @@ class AkShareData():
         return boll
         
     def load_his_price(self):
+        symbol, start_date, end_date, period = self.his_args
         col_mapping = {'日期': 'date', '开盘': 'open', '收盘': 'close', '最高': 'high', '最低': 'low', '成交量': 'vol', '成交额': 'money'}
         
-        his_price_raw = ak.fund_etf_hist_em(symbol="518880", period="daily", start_date="20130729", end_date="20250428", adjust="")
+        his_price_raw = ak.fund_etf_hist_em(symbol=symbol, period=period, start_date=start_date, end_date=end_date, adjust="")
         his_price_raw = his_price_raw.rename(columns=col_mapping)[col_mapping.values()]
         his_price_raw["date_idx"] = pd.to_datetime(his_price_raw["date"])
         his_price = his_price_raw.drop(columns='date')
         his_price = his_price.set_index("date_idx")
         
-        # his_price = pd.read_csv('../joinQuant/data-20240119-2025-01-23.csv', index_col=0, parse_dates=True)
         return his_price
 
 class Strategy(HyperParameters):
