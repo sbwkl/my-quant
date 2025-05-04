@@ -77,21 +77,19 @@ class Regression():
         pass
 
     def reg_test(self, strategy, data, every_n=1):
-        boll_data = data.load_boll_data()
         his_price = data.load_his_price()
         start_time = his_price.index[0]
 
         n = 0
         for current_time, price_row in his_price.iterrows():
-            boll_row = boll_data[boll_data['date'] < current_time.strftime('%Y-%m-%d')].tail(1)
-            strategy._eval(current_time, boll_row, price_row)
+            strategy._eval(current_time, price_row)
 
             n += 1
             if n % every_n == 0:
                 days = (current_time - start_time).days
                 strategy.board.draw(days, strategy.portfolio.net_worth, 'net-worth')
                 pass
-        strategy._eval_last(current_time, boll_row, price_row)
+        strategy._eval_last(current_time, price_row)
 
 class AkShareData():
     def __init__(self, boll_args, his_args):
