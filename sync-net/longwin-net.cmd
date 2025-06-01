@@ -5,3 +5,5 @@ call conda activate playground
 python longwin-net.py
 
 call conda deactivate
+
+pause
