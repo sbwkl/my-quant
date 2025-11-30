@@ -1,5 +1,6 @@
 import pyperclip
 import akshare as ak
+import time
 
 def main():
     code_lines = code_str.splitlines()
@@ -8,7 +9,11 @@ def main():
     for row in zip(code_lines, method_lines):
         code, method_name = row
         method = globals().get(method_name)
-        _, date, net = method(code)
+        try:
+            _, date, net = method(code)
+        except Exception as e:
+            print(code, method_name, 'error', e)
+            _, date, net = code, '', ''
         net_list.append(net)
         print(f'{code} {date} {net}')
     
@@ -28,13 +33,10 @@ def csi_index(symbol):
     return a_index('csi' + symbol)
 
 def hk_index(symbol):
-    try:
-        his_df = ak.stock_hk_index_daily_em(symbol=symbol)
-        last = his_df.tail(1)
-        net = str(last["latest"].item())
-        return (symbol, last["date"].item(), net)
-    except Exception:
-        return (symbol, '', '')
+    his_df = ak.stock_hk_index_daily_em(symbol=symbol)
+    last = his_df.tail(1)
+    net = str(last["latest"].item())
+    return (symbol, last["date"].item(), net)
     
 def hk_stock(symbol):
     his_df = ak.stock_hk_hist(symbol=symbol, period="daily", start_date="20250401", end_date="22220101", adjust="")
@@ -43,7 +45,7 @@ def hk_stock(symbol):
     return (symbol, last["日期"].item(), net)
 
 def a_index(symbol):
-    his_df = ak.stock_zh_index_daily_em(symbol=symbol)
+    his_df = ak.stock_zh_index_daily_em(symbol=symbol, start_date='20250401', end_date='20300101')
     last = his_df.tail(1)
     net = str(last['close'].item())
     return (symbol, last['date'].item(), net)

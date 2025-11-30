@@ -78,7 +78,9 @@ def monitor():
     # f1 = ak.futures_zh_spot(symbol='AG2508', market="CF", adjust='0')['current_price'].item()
     # f2 = ak.futures_foreign_commodity_realtime(symbol='SI')['最新价'].item()
     
-    forex_df = ak.forex_hist_em(symbol="USDCNH")
+    # forex_df = ak.forex_hist_em(symbol="USDCNH")
+    forex_df = ak.forex_spot_em()
+    forex_df = forex_df[forex_df['代码'] == "USDCNH"]
     usdcnh = forex_df.tail(1)['最新价'].item()
     # f2_cnh = f2 * usdcnh / 31.1034768 * 1000
     
