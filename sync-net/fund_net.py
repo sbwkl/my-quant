@@ -1,6 +1,7 @@
 import pyperclip
 import akshare as ak
 import time
+import requests
 
 def main():
     code_lines = code_str.splitlines()
@@ -30,40 +31,54 @@ def sh_index(symbol):
 def sz_index(symbol):
     return a_index('sz' + symbol)
 def csi_index(symbol):
-    return a_index('csi' + symbol)
+    url = f'https://www.csindex.com.cn/csindex-home/perf/index-perf-oneday?indexCode={symbol}'
+    res = requests.get(url).json()
+    return (symbol, res['data']['intraDayHeader']['tradeDate'], str(res['data']['intraDayHeader']['current']))
 
 def hk_index(symbol):
-    his_df = ak.stock_hk_index_daily_em(symbol=symbol)
-    last = his_df.tail(1)
-    net = str(last["latest"].item())
-    return (symbol, last["date"].item(), net)
+    
+    hk_map = {
+        'HSI': '00001.00',
+        'HSHCI': '02017.00',
+        'HSTECH': '02083.00'
+    }
+    code = hk_map[symbol]
+    
+    url = f'https://www.hsi.com.hk/data/chi/indexes/{code}/chart.json'
+    res = requests.get(url).json()
+    return (symbol, res['lastUpdate'].split()[0], res['previousClose'])
     
 def hk_stock(symbol):
-    his_df = ak.stock_hk_hist(symbol=symbol, period="daily", start_date="20250401", end_date="22220101", adjust="")
+    # his_df = ak.stock_hk_hist(symbol=symbol, period="daily", start_date="20250401", end_date="22220101", adjust="")
+    his_df = ak.stock_hk_daily(symbol=symbol, adjust="")
     last = his_df.tail(1)
-    net = str(last["收盘"].item())
-    return (symbol, last["日期"].item(), net)
+    net = str(last["close"].item())
+    return (symbol, last["date"].item(), net)
 
 def a_index(symbol):
-    his_df = ak.stock_zh_index_daily_em(symbol=symbol, start_date='20250401', end_date='20300101')
+    his_df = ak.stock_zh_index_daily(symbol=symbol)
     last = his_df.tail(1)
     net = str(last['close'].item())
     return (symbol, last['date'].item(), net)
 
+forex_spot_em_df = None
 def forex(symbol):
-    his_df = ak.forex_hist_em(symbol=symbol)
-    last = his_df.tail(1)
-    return (symbol, last['日期'].item(), str(last['最新价'].item()))
+    global forex_spot_em_df
+    
+    if forex_spot_em_df is None:
+        forex_spot_em_df = ak.forex_spot_em()
+    last = df[df['代码'] == symbol]
+    return (symbol, 'today', str(last['最新价'].item()))
 
+index_global_spot_em_df = None
 def global_index(symbol):
-    name_map = {
-        'HSI': '恒生指数',
-        'SPX': '标普500',
-        'GDAXI': '德国DAX30'
-    }
-    his_df = ak.index_global_hist_em(symbol=name_map[symbol])
-    last = his_df.tail(1)
-    return (symbol, last['日期'].item(), str(last['最新价'].item()))
+    global index_global_spot_em_df
+
+    if index_global_spot_em_df is None:
+        index_global_spot_em_df = ak.index_global_spot_em()
+    
+    last = index_global_spot_em_df[index_global_spot_em_df['代码'] == symbol]
+    return (symbol, last['最新行情时间'].item().split()[0], str(last['最新价'].item()))
 
 code_str='''001605
 010213
@@ -194,7 +209,7 @@ sz_index
 sh_index
 sh_index
 sz_index
-global_index
+hk_index
 hk_index
 hk_stock
 sz_index
