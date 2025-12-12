@@ -67,7 +67,7 @@ def forex(symbol):
     
     if forex_spot_em_df is None:
         forex_spot_em_df = ak.forex_spot_em()
-    last = df[df['代码'] == symbol]
+    last = forex_spot_em_df[forex_spot_em_df['代码'] == symbol]
     return (symbol, 'today', str(last['最新价'].item()))
 
 index_global_spot_em_df = None
