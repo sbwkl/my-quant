@@ -4,11 +4,10 @@ import time
 import requests
 
 def main():
-    code_lines = code_str.splitlines()
-    method_lines = method_str.splitlines()
+    code_method = code_method_str.splitlines()
     net_list = []
-    for row in zip(code_lines, method_lines):
-        code, method_name = row
+    for row in code_method:
+        code, method_name = row.split('\t')
         method = globals().get(method_name)
         try:
             _, date, net = method(code)
@@ -227,6 +226,81 @@ forex
 forex
 a_fund
 a_fund
+'''
+
+code_method_str='''001605	a_fund
+010213	a_fund
+005642	a_fund
+007549	a_fund
+750001	a_fund
+164906	a_fund
+009179	a_fund
+000934	a_fund
+006327	a_fund
+519736	a_fund
+001668	a_fund
+004752	a_fund
+000071	a_fund
+007802	a_fund
+160633	a_fund
+005775	a_fund
+001071	a_fund
+519195	a_fund
+006039	a_fund
+166019	a_fund
+001063	a_fund
+002708	a_fund
+162412	a_fund
+001064	a_fund
+000051	a_fund
+090010	a_fund
+160119	a_fund
+000968	a_fund
+012323	a_fund
+110020	a_fund
+519915	a_fund
+001717	a_fund
+014424	a_fund
+011309	a_fund
+002656	a_fund
+019518	a_fund
+004419	a_fund
+000942	a_fund
+002903	a_fund
+270042	a_fund
+000001	csi_index
+399006	sz_index
+000300	csi_index
+000905	csi_index
+000852	csi_index
+932000	csi_index
+000922	csi_index
+000991	csi_index
+399989	csi_index
+000990	csi_index
+000942	csi_index
+399396	sz_index
+000827	csi_index
+000993	csi_index
+399971	csi_index
+HSI	hk_index
+HSHCI	hk_index
+00700	hk_stock
+399967	csi_index
+399812	csi_index
+000016	csi_index
+399975	csi_index
+H30533	csi_index
+H11136	csi_index
+HSTECH	hk_index
+000688	csi_index
+GDAXI	global_index
+SPX	global_index
+518880	a_fund
+USDCNH	forex
+JPYCNH	forex
+000369	a_fund
+110022	a_fund
 '''
 
 if __name__ == "__main__":
