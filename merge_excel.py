@@ -13,9 +13,8 @@ def main(folder_path, target_filename):
     target_extension  = target_path.suffix
 
     # 查找所有符合条件的Excel文件
-    file_pattern = f'{target_file}.*'
-    print(folder_path, file_pattern)
-    excel_files = list(Path(folder_path).resolve().glob(file_pattern))
+    file_pattern = f'{target_file}*{target_extension}'
+    excel_files = list(Path(folder_path).glob(file_pattern))
 
     # 排除目标输出文件（如果已存在）
     output_filename = target_file + target_extension
