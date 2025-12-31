@@ -8,6 +8,10 @@ python merge_excel.py data/choice/disaggregated K线导出_AG0_5分钟线数据.
 
 python merge_excel.py data/choice/disaggregated K线导出_518850_60分钟线数据.xlsx
 
+python merge_excel.py data/choice/disaggregated K线导出_AG0_120分钟线数据.xlsx
+
+python merge_excel.py data/choice/disaggregated K线导出_AU0_120分钟线数据.xlsx
+
 call conda deactivate
 
 pause
