@@ -3,6 +3,9 @@ import time
 import atexit
 import signal
 from lark0 import LarkClient
+from gmail_api0 import GmailService
+
+alerting = False
 
 def cleanup():
     print("执行退出前的清理操作...")
@@ -12,8 +15,36 @@ def signal_handler(signum, frame):
     cleanup()
     exit(0)
 
-def loop_task():
-    print('monitor')
+def loop_task(client, service):
+    global alerting
+    if alerting:
+        return
+    
+    messages = service.message_list("donotreply@interactivebrokers.com is:unread")
+    if len(messages) == 0:
+        print('未发现告警邮件，继续监听')
+        return
+    
+    alert_message = None
+    for message in messages:
+        msg = service.message_get(message["id"])
+        if "chongqian" in msg["snippet"]:
+            alert_message = msg
+            break
+    if alert_message is None:
+        print('未发现有效的告警邮件，继续监听')
+        return
+
+    alerting = True
+    msg = client.send_msg('低于警戒线，看盘');
+    while True:
+        res = client.read_users(msg.message_id)
+        if len(res.items) > 0:
+            break
+        client.urgent_phone(msg.message_id)
+        time.sleep(60)
+    
+    alerting = False
 
 def main():
     signal.signal(signal.SIGINT, signal_handler)
@@ -21,13 +52,14 @@ def main():
 
     print('设置定时任务')
 
-    schedule.every(5).minutes.do(loop_task)
+    client = LarkClient()
+    service = GmailService()
+
+    schedule.every(5).minutes.do(loop_task, client=client, service=service)
 
     print("定时任务已启动，按 Ctrl+C 终止...")
 
-    client = LarkClient()
-
-    loop_task()
+    loop_task(client, service)
 
     try:
         while True:
