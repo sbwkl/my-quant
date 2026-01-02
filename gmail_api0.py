@@ -13,31 +13,31 @@ from google_auth_httplib2 import AuthorizedHttp
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
+class GmailService():
+  def __init__(self):
+    """Shows basic usage of the Gmail API.
+    Lists the user's Gmail labels.
+    """
+    creds = None
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists("creds/token.json"):
+      creds = Credentials.from_authorized_user_file("creds/token.json", SCOPES)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+      if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+      else:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            "creds/credentials.json", SCOPES
+        )
+        creds = flow.run_local_server(port=0)
+      # Save the credentials for the next run
+      with open("creds/token.json", "w") as token:
+        token.write(creds.to_json())
 
-def main():
-  """Shows basic usage of the Gmail API.
-  Lists the user's Gmail labels.
-  """
-  creds = None
-  # The file token.json stores the user's access and refresh tokens, and is
-  # created automatically when the authorization flow completes for the first
-  # time.
-  if os.path.exists("creds/token.json"):
-    creds = Credentials.from_authorized_user_file("creds/token.json", SCOPES)
-  # If there are no (valid) credentials available, let the user log in.
-  if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-      creds.refresh(Request())
-    else:
-      flow = InstalledAppFlow.from_client_secrets_file(
-          "creds/credentials.json", SCOPES
-      )
-      creds = flow.run_local_server(port=0)
-    # Save the credentials for the next run
-    with open("creds/token.json", "w") as token:
-      token.write(creds.to_json())
 
-  try:
     PROXY_IP = '127.0.0.1'
     PROXY_PORT = 7898
     PROXY_TYPE = socks.SOCKS5 
@@ -52,11 +52,17 @@ def main():
     authorized_http = AuthorizedHttp(creds, http=http)
 
     # Call the Gmail API
-    service = build("gmail", "v1", http=authorized_http)
-    results = service.users().messages().list(userId="me", q="ibkr is:unread", maxResults=5).execute()
+    self.service = build("gmail", "v1", http=authorized_http)
+  def message_list(self, q):
+    results = self.service.users().messages().list(userId="me", q=q, maxResults=5).execute()
     messages = results.get("messages", [])
+    return messages
 
-    print(results)
+def main():
+    service = GmailService()
+    
+    messages = service.message_list("ibkr is:unread")
+
     if not messages:
       print("No messages found.")
       return
@@ -68,11 +74,6 @@ def main():
             service.users().messages().get(userId="me", id=message["id"]).execute()
         )
         print(f'  Subject: {msg["snippet"]}')
-
-  except HttpError as error:
-    # TODO(developer) - Handle errors from gmail API.
-    print(f"An error occurred: {error}")
-
 
 if __name__ == "__main__":
   main()

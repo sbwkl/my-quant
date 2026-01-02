@@ -1,3 +1,7 @@
+import warnings
+# Filter pkg_resources deprecation warning from lark-oapi
+warnings.filterwarnings("ignore", message="pkg_resources is deprecated")
+
 import json
 from dotenv import load_dotenv
 import os
@@ -91,5 +95,5 @@ def main():
 
     # client.urgent_phone('om_x100b5a476d81f0b0c384ce31f0cc368')
     
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
