@@ -1,13 +1,16 @@
 import json
-
+from dotenv import load_dotenv
+import os
 import lark_oapi as lark
 from lark_oapi.api.im.v1 import *
+
+load_dotenv()
 
 class LarkClient:
     def __init__(self):
         self.client = lark.Client.builder() \
-            .app_id("cli_a9ddade85938dcc5") \
-            .app_secret("prmSzx7ILcUGljVSqzcaHhFp5jb1NbV1") \
+            .app_id(os.getenv("LARK_APP_ID")) \
+            .app_secret(os.getenv("LARK_APP_SECRET")) \
             .log_level(lark.LogLevel.INFO) \
             .build()
 
@@ -84,7 +87,7 @@ def main():
 
     # om_x100b5a452e435ca0b4c3da142fa47af
     # om_x100b5a476d81f0b0c384ce31f0cc368
-    # data = client.read_users('om_x100b5a476d81f0b0c384ce31f0cc368')
+    data = client.read_users('om_x100b5a476d81f0b0c384ce31f0cc368')
 
     # client.urgent_phone('om_x100b5a476d81f0b0c384ce31f0cc368')
     
