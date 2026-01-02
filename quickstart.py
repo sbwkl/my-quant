@@ -5,6 +5,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import httplib2
+import socks
+from google.oauth2 import service_account
+from google_auth_httplib2 import AuthorizedHttp
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -34,8 +38,21 @@ def main():
       token.write(creds.to_json())
 
   try:
+    PROXY_IP = '127.0.0.1'
+    PROXY_PORT = 7898
+    PROXY_TYPE = socks.SOCKS5 
+
+    proxy_info = httplib2.ProxyInfo(
+        proxy_type=PROXY_TYPE,
+        proxy_host=PROXY_IP,
+        proxy_port=PROXY_PORT
+    )
+
+    http = httplib2.Http(proxy_info=proxy_info)
+    authorized_http = AuthorizedHttp(creds, http=http)
+
     # Call the Gmail API
-    service = build("gmail", "v1", credentials=creds)
+    service = build("gmail", "v1", http=authorized_http)
     results = service.users().messages().list(userId="me", q="ibkr is:unread", maxResults=5).execute()
     messages = results.get("messages", [])
 
