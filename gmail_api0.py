@@ -54,12 +54,20 @@ class GmailService():
         # Call the Gmail API
         self.service = build("gmail", "v1", http=authorized_http)
     def message_list(self, q):
-        results = self.service.users().messages().list(userId="me", q=q, maxResults=5).execute()
-        messages = results.get("messages", [])
-        return messages
+        try:
+            results = self.service.users().messages().list(userId="me", q=q, maxResults=5).execute()
+            messages = results.get("messages", [])
+            return messages
+        except Exception as e:
+            print(f'Error: {e}')
+            return []
 
     def message_get(self, id):
-        return self.service.users().messages().get(userId="me", id=id).execute()
+        try:
+            return self.service.users().messages().get(userId="me", id=id).execute()
+        except Exception as e:
+            print(f'Error: {e}')
+            return None
 
 
 def main():

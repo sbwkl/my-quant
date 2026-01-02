@@ -20,7 +20,7 @@ def loop_task(client, service):
     if alerting:
         return
     
-    messages = service.message_list("donotreply@interactivebrokers.com is:unread")
+    messages = service.message_list("from donotreply@interactivebrokers.com is:unread")
     if len(messages) == 0:
         print('未发现告警邮件，继续监听')
         return
@@ -28,7 +28,7 @@ def loop_task(client, service):
     alert_message = None
     for message in messages:
         msg = service.message_get(message["id"])
-        if "chongqian" in msg["snippet"]:
+        if msg is not None and "chongqian" in msg["snippet"]:
             alert_message = msg
             break
     if alert_message is None:
@@ -68,5 +68,11 @@ def main():
     except KeyboardInterrupt:
         print("\n任务已停止")
 
+def main_test():
+    service = GmailService()
+    msg_list = service.message_list('from donotreply@interactivebrokers.com is:unread')
+    print(msg_list)
+
 if __name__ == "__main__":
     main()
+    # main_test()
